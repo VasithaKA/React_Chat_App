@@ -9,10 +9,10 @@ io.on('connection', socket => {
   const clientId = socket.handshake.query.clientId
   socket.join(clientId)
 
-  socket.on('send-message', ({ content, sentDate, conversationId, conversationName, members }) => {
+  socket.on('send-message', ({ content, sentDate, conversationId, conversationName, isPersonalChat, members }) => {
     members.forEach(member => {
       socket.broadcast.to(member).emit('receive-message', {
-        senderId: clientId, content, sentDate, conversationId, conversationName, members, isRead: false
+        senderId: clientId, content, sentDate, conversationId, conversationName, isPersonalChat, members, isRead: false
       })
     })
   })
