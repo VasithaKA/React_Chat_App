@@ -9,27 +9,31 @@ export const useConversations = () => useContext(ConversationsContext)
 
 export function ConversationsProvider({ myId, children }) {
     const [conversations, setconversations] = useLocalStorage('conversations', [])
-    const [selectedConversationId, setselectedConversationId] = useState()
+    const [selectedConversationDetails, setselectedConversationDetails] = useState({ id: '', name: 'Group Name', isPersonalChat: false, members: [] })
     const { contacts } = useContacts()
     const { socket } = useSocket()
 
-    const addNewConversation = useCallback(({ conversationId, conversationName, members, createDateTime }) => {
-        setconversations(prevConversations => [...prevConversations, { conversationId, conversationName, lastUpdateTime: createDateTime, members, unreadCount: 0, messages: [] }])
+    const addNewGroupConversation = useCallback(({ conversationId, conversationName, members, createDateTime }) => {
+        setconversations(prevConversations => [...prevConversations, { conversationId, conversationName, lastUpdateTime: createDateTime, isPersonalChat: false, members, unreadCount: 0, messages: [] }])
     }, [setconversations])
 
-    const addMessageToConversation = useCallback(({ senderId, content, sentDate, conversationId, conversationName, members, isRead = true }) => {
+    const addMessageToConversation = useCallback(({ senderId, content, sentDate, conversationId, conversationName, members, isRead = true, isPersonalChat = false }) => {
         setconversations(prevConversations => {
             let isOldConversation = false
             const newConversations = prevConversations.map(conversation => {
                 if (conversation.conversationId === conversationId) {
+                    let count = conversation.unreadCount;
                     isOldConversation = true
-                    return { ...conversation, lastUpdateTime: sentDate, unreadCount: isRead ? 0 : conversation.unreadCount++, messages: [...conversation.messages, { senderId, content, sentDate }] }
+                    return { ...conversation, lastUpdateTime: sentDate, unreadCount: (isRead ? 0 : count += 1), messages: [...conversation.messages, { senderId, content, sentDate }] }
                 }
                 return conversation
             })
-            if (!isOldConversation) {
-                console.log("NEW CONVERSATION TO STACK, ID:", conversationId);
-                return [...prevConversations, { conversationId, conversationName, lastUpdateTime: sentDate, members, messages: [{ senderId, content, sentDate }] }]
+            if (!isOldConversation && isPersonalChat) {
+                console.log("NEW PRIVATE CONVERSATION TO STACK, ID:", conversationId);
+                return [...prevConversations, { conversationId, isPersonalChat, lastUpdateTime: sentDate, members, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
+            } else if (!isOldConversation && !isPersonalChat) {
+                console.log("NEW GROUP CONVERSATION TO STACK, ID:", conversationId);
+                return [...prevConversations, { conversationId, conversationName, lastUpdateTime: sentDate, members, isPersonalChat, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
             } else return newConversations
         })
     }, [setconversations])
@@ -56,19 +60,20 @@ export function ConversationsProvider({ myId, children }) {
 
     useEffect(() => {
         if (socket == null) return
-        socket.on('receive-conversation-details', addNewConversation)
+        socket.on('receive-conversation-details', addNewGroupConversation)
         return () => socket.off('receive-conversation-details')
-    }, [socket, addNewConversation])
+    }, [socket, addNewGroupConversation])
 
-    function sendMessage(content, sentDate, conversationId, conversationName, members) {
-        socket.emit('send-message', { content, sentDate, conversationId, conversationName, members })
-        addMessageToConversation({ senderId: myId, content, sentDate, conversationId })
+    function sendMessage(content, sentDate) {
+        const [conversationId, conversationName, isPersonalChat, members] = [selectedConversationDetails.id, selectedConversationDetails.name, selectedConversationDetails.isPersonalChat, selectedConversationDetails.members]
+        socket.emit('send-message', { content, sentDate, conversationId, conversationName, isPersonalChat, members })
+        addMessageToConversation({ senderId: myId, content, sentDate, conversationId, isPersonalChat, members })
     }
 
-    function createConversation(conversationId, conversationName, members, createDateTime) {
+    function createGroupConversation(conversationId, conversationName, members, createDateTime) {
         members.push(myId)
         socket.emit('create-conversation', { conversationId, conversationName, members, createDateTime })
-        addNewConversation({ conversationId, conversationName, members, createDateTime })
+        addNewGroupConversation({ conversationId, conversationName, members, createDateTime })
     }
 
     let getSelectedConversationDetails
@@ -76,7 +81,8 @@ export function ConversationsProvider({ myId, children }) {
 
     const getConversatonsDetails = conversations.map(conversation => {
         let isSelectedConversation = false
-        if (conversation.conversationId === selectedConversationId) {
+        let personalChatName = ''
+        if (conversation.conversationId === selectedConversationDetails.id) {
             const messages = conversation.messages.map(message => {
                 const contact = contacts.find(contact => contact.id === message.senderId)
                 const senderName = (contact && contact.name) || message.senderId
@@ -86,18 +92,23 @@ export function ConversationsProvider({ myId, children }) {
             isSelectedConversation = true
             getSelectedConversationDetails = { ...conversation, messages }
         }
+        if (conversation.isPersonalChat) {
+            const memberId = conversation.members.find(id => id !== myId)
+            const contact = contacts.find(contact => contact.id === memberId)
+            personalChatName = (contact && contact.name) || memberId
+        }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
-        return { conversationId: conversation.conversationId, conversationName: conversation.conversationName, lastUpdateTime: conversation.lastUpdateTime, unreadCount: conversation.unreadCount }
+        return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdateTime: conversation.lastUpdateTime, unreadCount: conversation.unreadCount }
     }).sort((a, b) => new Date(b.lastUpdateTime) - new Date(a.lastUpdateTime))
 
     const value = {
         conversationsDetails: getConversatonsDetails,
-        selectedConversationId,
-        setselectedConversationId,
+        selectedConversationDetails,
+        setselectedConversationDetails,
         getMessages: getSelectedConversationDetails,
         getUnreadConversationCount,
         sendMessage,
-        createConversation,
+        createGroupConversation,
         setUnreadCountToZero
     }
 
