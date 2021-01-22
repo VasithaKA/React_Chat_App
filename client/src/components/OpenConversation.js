@@ -1,35 +1,58 @@
-import React, { useCallback, useState } from 'react'
-import { Button, Form, InputGroup } from 'react-bootstrap'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Button, Form, InputGroup, Navbar } from 'react-bootstrap'
 import { useConversations } from '../contexts/ConversationsProvider'
 
 const moment = window.moment;
 
 export default function OpenConversation() {
     const [text, settext] = useState('')
+    const formInputRef = useRef()
     const lastMessageRef = useCallback(node => {
         if (node) node.scrollIntoView({ smooth: true })
     }, [])
-    const { getMessages, sendMessage } = useConversations()
+    const { getMessages, sendMessage, selectedConversationDetails } = useConversations()
     const dateFormats = {
         sameDay: '[Today]',
         lastDay: '[Yesterday]',
-        lastWeek: '[Last] dddd',
+        lastWeek: '[last] dddd',
         sameElse: 'DD MMMM YYYY'
     }
 
     function handleSubmit(e) {
         e.preventDefault()
         if (text) {
-            sendMessage(text, moment().format(), getMessages.conversationId, getMessages.conversationName, getMessages.members)
+            sendMessage(text, moment().format())
         }
         settext('')
     }
 
+    useEffect(() => {
+        settext('')
+        formInputRef.current.focus()
+    }, [selectedConversationDetails, getMessages])
+
     return (
         <div className="d-flex flex-column flex-grow-1">
+            <Navbar bg="primary" variant="dark">
+                <Navbar.Brand>
+                    {/* <img
+                        alt="profile picture"
+                        src="https://react-bootstrap.netlify.app/logo.svg"
+                        width="30"
+                        height="30"
+                        className="d-inline-block align-top"
+                    />{' '} */}
+                    {selectedConversationDetails.name}
+                </Navbar.Brand>
+                {/* <Navbar.Collapse className="justify-content-end">
+                    <Navbar.Text>
+                        <i className="fa fa-pencil-square-o text-white" aria-hidden="true"></i>
+                    </Navbar.Text>
+                </Navbar.Collapse> */}
+            </Navbar>
             <div className="flex-grow-1 overflow-auto m-2">
                 <div className="flex-grow-1 px-3">
-                    {getMessages.messages.map((message, index) => {
+                    {getMessages && getMessages.messages.map((message, index) => {
                         let isSameDate = false
                         if (index === 0) isSameDate = true
                         else if (moment(message.sentDate).format('l') !== moment(getMessages.messages[index - 1].sentDate).format('l')) isSameDate = true
@@ -59,7 +82,7 @@ export default function OpenConversation() {
                         <Form.Control
                             as="textarea"
                             required
-                            autoFocus
+                            ref={formInputRef}
                             value={text}
                             placeholder="Type a message"
                             onChange={e => settext(e.target.value)}
