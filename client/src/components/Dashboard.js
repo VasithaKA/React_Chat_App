@@ -4,11 +4,11 @@ import OpenConversation from './OpenConversation'
 import SideBar from './SideBar'
 
 export default function Dashboard({ myId }) {
-    const { selectedConversationId } = useConversations()
+    const { selectedConversationDetails } = useConversations()
     return (
         <div className="d-flex" style={{ height: '100vh' }}>
             <SideBar myId={myId} />
-            {selectedConversationId && <OpenConversation />}
+            {selectedConversationDetails.id && <OpenConversation />}
         </div>
     )
 }
