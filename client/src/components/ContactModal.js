@@ -2,15 +2,15 @@ import React, { useRef } from 'react'
 import { Button, Form, Modal } from 'react-bootstrap'
 import { useContacts } from '../contexts/ContactsProvider'
 
-export default function ContactModal({ closeModal }) {
+export default function ContactModal({ closeModal, editContact }) {
     const idRef = useRef()
     const nameRef = useRef()
     const { createContact } = useContacts()
 
-    function handleSubmit(e) {
+    function handleSubmit(e, shouldDeleteContact = false) {
         e.preventDefault()
-        console.log(idRef.current.value, nameRef.current.value);
-        if (idRef.current.value && nameRef.current.value) createContact(idRef.current.value, nameRef.current.value)
+        const isUpdateContact = editContact && !shouldDeleteContact ? true : false
+        if (idRef.current.value && nameRef.current.value) createContact(idRef.current.value, nameRef.current.value, isUpdateContact, shouldDeleteContact)
         closeModal()
     }
 
@@ -21,13 +21,14 @@ export default function ContactModal({ closeModal }) {
                 <Form onSubmit={handleSubmit}>
                     <Form.Group>
                         <Form.Label>Id</Form.Label>
-                        <Form.Control type="text" ref={idRef} required />
+                        <Form.Control type="text" ref={idRef} required disabled={editContact} defaultValue={editContact && editContact.id} />
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Name</Form.Label>
-                        <Form.Control type="text" ref={nameRef} required />
+                        <Form.Control type="text" ref={nameRef} required defaultValue={editContact && editContact.name} />
                     </Form.Group>
-                    <Button type="submit">Add Contact</Button>
+                    <Button type="submit">{editContact ? 'Save Changes' : 'Add Contact'}</Button>
+                    {editContact && <Button type="button" className="float-right" variant="danger" onClick={e => handleSubmit(e, true)}>Delete Contact</Button>}
                 </Form>
             </Modal.Body>
         </>
