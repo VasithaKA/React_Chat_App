@@ -80,22 +80,24 @@ export function ConversationsProvider({ myId, children }) {
     let getUnreadConversationCount = 0
 
     const getConversatonsDetails = conversations.map(conversation => {
-        let isSelectedConversation = false
-        let personalChatName = ''
-        if (conversation.conversationId === selectedConversationDetails.id) {
+        const isSelectedConversation = conversation.conversationId === selectedConversationDetails.id
+        if (isSelectedConversation) {
             const messages = conversation.messages.map(message => {
                 const contact = contacts.find(contact => contact.id === message.senderId)
                 const senderName = (contact && contact.name) || message.senderId
                 const fromMe = myId === message.senderId
                 return { ...message, senderName, fromMe }
             })
-            isSelectedConversation = true
             getSelectedConversationDetails = { ...conversation, messages }
         }
         if (conversation.isPersonalChat) {
             const memberId = conversation.members.find(id => id !== myId)
             const contact = contacts.find(contact => contact.id === memberId)
-            personalChatName = (contact && contact.name) || memberId
+            var personalChatName = (contact && contact.name) || memberId
+            if (isSelectedConversation) {
+                const isOnline = (contact && contact.isOnline) || ''
+                getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline }
+            }
         }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
         return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdateTime: conversation.lastUpdateTime, unreadCount: conversation.unreadCount }

@@ -7,6 +7,7 @@ const io = require('socket.io')(5000, {
 
 io.on('connection', socket => {
   const clientId = socket.handshake.query.clientId
+  let contacts = []
   socket.join(clientId)
 
   socket.on('send-message', ({ content, sentDate, conversationId, conversationName, isPersonalChat, members }) => {
@@ -24,4 +25,30 @@ io.on('connection', socket => {
       })
     })
   })
+
+  socket.on('check-others-online', ({ contactsDetails }) => {
+    contacts = contactsDetails
+    console.log(contacts);
+    if (contacts.length > 0) {
+      contacts.forEach(contact => {
+        socket.broadcast.to(contact.id).emit('new-online-user', { userId: clientId })
+      })
+    }
+  })
+
+  socket.on('send-user-online', ({ contactId }) => {
+    if (contactId) {
+      socket.broadcast.to(contactId).emit('receive-user-online', { userId: clientId })
+    }
+  })
+
+  socket.on('disconnect', () => {
+    console.log('disconnect');
+    console.log(contacts);
+    if (contacts.length > 0) {
+      contacts.forEach(contact => {
+        socket.broadcast.to(contact.id).emit('receive-user-offline', { userId: clientId, isGoToOffline: true })
+      })
+    }
+  });
 })

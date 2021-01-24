@@ -29,6 +29,7 @@ export default function Contacts({ myId }) {
                     <ListGroup.Item key={contact.id} className="position-relative" variant="flush">
                         <div style={{ cursor: 'pointer' }} onClick={() => goToPersonalConversation(contact)}>
                             {contact.name}
+                            <i className={`fa fa-circle ml-2 ${contact.isOnline ? 'text-success' : 'text-danger'}`} style={{ fontSize: '.7em' }} aria-hidden="true" />
                         </div>
                         <span className="position-absolute rounded-circle" style={{
                             padding: '.05em .3em', background: 'rgb(220, 220, 220)',

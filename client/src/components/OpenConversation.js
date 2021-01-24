@@ -43,6 +43,7 @@ export default function OpenConversation() {
                         className="d-inline-block align-top"
                     />{' '} */}
                     {selectedConversationDetails.name}
+                    {getMessages && getMessages.isOnline && <span className="small ml-2">online</span>}
                 </Navbar.Brand>
                 {/* <Navbar.Collapse className="justify-content-end">
                     <Navbar.Text>
