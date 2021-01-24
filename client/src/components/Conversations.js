@@ -7,8 +7,7 @@ const moment = window.moment;
 export default function Conversations() {
     const { conversationsDetails, selectedConversationDetails, setselectedConversationDetails, setUnreadCountToZero } = useConversations()
     const lastMessageRef = useCallback(conversationId => {
-        let timeOutFunc = null
-        if (conversationId) timeOutFunc = setTimeout(() => setUnreadCountToZero(conversationId), 0)
+        if (conversationId) var timeOutFunc = setTimeout(() => setUnreadCountToZero(conversationId), 0)
         return () => clearTimeout(timeOutFunc)
     }, [setUnreadCountToZero])
 
