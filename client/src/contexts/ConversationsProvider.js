@@ -13,8 +13,8 @@ export function ConversationsProvider({ myId, children }) {
     const { contacts } = useContacts()
     const { socket } = useSocket()
 
-    const addNewGroupConversation = useCallback(({ conversationId, conversationName, members, createDateTime }) => {
-        setconversations(prevConversations => [...prevConversations, { conversationId, conversationName, lastUpdateTime: createDateTime, isPersonalChat: false, members, unreadCount: 0, messages: [] }])
+    const addNewGroupConversation = useCallback(({ conversationId, conversationName, members, createdDateTime }) => {
+        setconversations(prevConversations => [...prevConversations, { conversationId, conversationName, lastUpdatedTime: createdDateTime, isPersonalChat: false, members, unreadCount: 0, messages: [] }])
     }, [setconversations])
 
     const addMessageToConversation = useCallback(({ senderId, content, sentDate, conversationId, conversationName, members, isRead = true, isPersonalChat = false }) => {
@@ -24,16 +24,16 @@ export function ConversationsProvider({ myId, children }) {
                 if (conversation.conversationId === conversationId) {
                     let count = conversation.unreadCount;
                     isOldConversation = true
-                    return { ...conversation, lastUpdateTime: sentDate, unreadCount: (isRead ? 0 : count += 1), messages: [...conversation.messages, { senderId, content, sentDate }] }
+                    return { ...conversation, lastUpdatedTime: sentDate, unreadCount: (isRead ? 0 : count += 1), messages: [...conversation.messages, { senderId, content, sentDate }] }
                 }
                 return conversation
             })
             if (!isOldConversation && isPersonalChat) {
                 console.log("NEW PRIVATE CONVERSATION TO STACK, ID:", conversationId);
-                return [...prevConversations, { conversationId, isPersonalChat, lastUpdateTime: sentDate, members, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
+                return [...prevConversations, { conversationId, isPersonalChat, lastUpdatedTime: sentDate, members, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
             } else if (!isOldConversation && !isPersonalChat) {
                 console.log("NEW GROUP CONVERSATION TO STACK, ID:", conversationId);
-                return [...prevConversations, { conversationId, conversationName, lastUpdateTime: sentDate, members, isPersonalChat, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
+                return [...prevConversations, { conversationId, conversationName, lastUpdatedTime: sentDate, members, isPersonalChat, unreadCount: (isRead ? 0 : 1), messages: [{ senderId, content, sentDate }] }]
             } else return newConversations
         })
     }, [setconversations])
@@ -70,10 +70,10 @@ export function ConversationsProvider({ myId, children }) {
         addMessageToConversation({ senderId: myId, content, sentDate, conversationId, isPersonalChat, members })
     }
 
-    function createGroupConversation(conversationId, conversationName, members, createDateTime) {
+    function createGroupConversation(conversationId, conversationName, members, createdDateTime) {
         members.push(myId)
-        socket.emit('create-conversation', { conversationId, conversationName, members, createDateTime })
-        addNewGroupConversation({ conversationId, conversationName, members, createDateTime })
+        socket.emit('create-conversation', { conversationId, conversationName, members, createdDateTime })
+        addNewGroupConversation({ conversationId, conversationName, members, createdDateTime })
     }
 
     let getSelectedConversationDetails
@@ -100,8 +100,8 @@ export function ConversationsProvider({ myId, children }) {
             }
         }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
-        return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdateTime: conversation.lastUpdateTime, unreadCount: conversation.unreadCount }
-    }).sort((a, b) => new Date(b.lastUpdateTime) - new Date(a.lastUpdateTime))
+        return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdatedTime: conversation.lastUpdatedTime, unreadCount: conversation.unreadCount }
+    }).sort((a, b) => new Date(b.lastUpdatedTime) - new Date(a.lastUpdatedTime))
 
     const value = {
         conversationsDetails: getConversatonsDetails,

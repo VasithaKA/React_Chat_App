@@ -23,7 +23,7 @@ export default function Conversations() {
                 >
                     {conversation.conversationName}
                     {selectedConversationDetails.id !== conversation.conversationId && conversation.unreadCount > 0 && <Badge className="float-right" pill variant="warning" style={{ padding: '.4em .65em' }}>{conversation.unreadCount}</Badge>}
-                    <div className={`text-right small ${selectedConversationDetails.id === conversation.conversationId ? 'text-white' : 'text-muted '}`}>{moment(conversation.lastUpdateTime).format('LT')}</div>
+                    <div className={`text-right small ${selectedConversationDetails.id === conversation.conversationId ? 'text-white' : 'text-muted '}`}>{moment(conversation.lastUpdatedTime).format('LT')}</div>
                 </ListGroup.Item>
             ))}
         </ListGroup>
