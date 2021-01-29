@@ -35,10 +35,10 @@ export function ContactsProvider({ children }) {
         console.log(userId)
         if (isGoToOffline) {
             setonlineContactIds(onlineContacts => onlineContacts.filter(fId => fId !== userId))
-        } else if (!onlineContactIds.includes(userId)) {
+        } else {
             setonlineContactIds(onlineContacts => [...onlineContacts, userId])
         }
-    }, [onlineContactIds, setonlineContactIds])
+    }, [setonlineContactIds])
 
     useEffect(() => {
         console.log('check-others-online');
