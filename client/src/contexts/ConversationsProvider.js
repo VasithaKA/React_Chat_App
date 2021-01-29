@@ -5,6 +5,8 @@ import { useSocket } from './SocketProvider';
 
 const ConversationsContext = React.createContext()
 
+const API = '/api/conversations'
+
 export const useConversations = () => useContext(ConversationsContext)
 
 export function ConversationsProvider({ myId, children }) {
@@ -40,16 +42,36 @@ export function ConversationsProvider({ myId, children }) {
 
     const setUnreadCountToZero = useCallback(conversationId => {
         console.log("settozerooo");
-        setconversations(prevConversations => {
-            const newConversations = prevConversations.map(conversation => {
-                if (conversation.conversationId === conversationId) {
-                    return { ...conversation, unreadCount: 0 }
-                }
-                return conversation
-            })
-            return newConversations
-        })
-    }, [setconversations])
+        const requestOptions = {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ conversationId, memberId: myId })
+        };
+        fetch(API, requestOptions)
+            .then(() => {
+                setconversations(prevConversations => {
+                    const newConversations = prevConversations.map(conversation => {
+                        if (conversation.conversationId === conversationId) {
+                            return { ...conversation, unreadCount: 0 }
+                        }
+                        return conversation
+                    })
+                    return newConversations
+                })
+            }).catch(error => console.log(error))
+    }, [myId, setconversations])
+
+    useEffect(() => {
+        // GET request using fetch inside useEffect React hook
+        console.log('Test API...................');
+        fetch(API + '/' + myId)
+            .then(response => response.json())
+            .then(data => {
+                setconversations(data)
+            });
+
+        // empty dependency array means this effect will only run once (like componentDidMount in classes)
+    }, [myId, setconversations]);
 
     useEffect(() => {
         console.log("socket")
