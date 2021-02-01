@@ -4,32 +4,47 @@ import { useSocket } from './SocketProvider';
 
 const ContactsContext = React.createContext()
 
+const API = '/api/users'
+
 export const useContacts = () => useContext(ContactsContext)
 
-export function ContactsProvider({ children }) {
+export function ContactsProvider({ token, children }) {
     const [contacts, setcontacts] = useLocalStorage('contacts', [])
     const [onlineContactIds, setonlineContactIds] = useState([])
     const { socket } = useSocket()
 
-    function createContact(id, name, isUpdateContact, shouldDeleteContact) {
-        setcontacts(prevContacts => {
-            if (isUpdateContact) {
-                const updatedContacts = prevContacts.map(contact => {
-                    if (contact.id === id) {
-                        return { ...contact, name }
-                    } else {
-                        return contact
-                    }
-                })
-                return updatedContacts
-            } else if (shouldDeleteContact) {
-                const updatedContacts = prevContacts.filter(contact => contact.id !== id)
-                return updatedContacts
-            } else {
-                return [...prevContacts, { id, name }]
-            }
-        })
-    }
+    const createContact = useCallback(({ id, email, name, isUpdateContact, shouldDeleteContact }) => {
+        const URL = `${API}/${email}`
+        const headers = { 'Authorization': 'Bearer ' + token }
+        if (!isUpdateContact && !shouldDeleteContact) {
+            fetch(URL, { headers }).then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = (data && data.message) || response.statusText;
+                    return Promise.reject(error);
+                }
+                setcontacts(prevContacts => [...prevContacts, { id: data.id, email, name, knownAs: data.knownAs }])
+            }).catch(error => {
+                console.error('There was an error!', error);
+            })
+        } else {
+            setcontacts(prevContacts => {
+                if (isUpdateContact) {
+                    const updatedContacts = prevContacts.map(contact => {
+                        if (contact.id === id) {
+                            return { ...contact, name }
+                        } else {
+                            return contact
+                        }
+                    })
+                    return updatedContacts
+                } else if (shouldDeleteContact) {
+                    const updatedContacts = prevContacts.filter(contact => contact.id !== id)
+                    return updatedContacts
+                }
+            })
+        }
+    }, [token, setcontacts])
 
     const setOnlineContacts = useCallback(({ userId, isGoToOffline = false }) => {
         console.log(userId)

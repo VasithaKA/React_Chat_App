@@ -10,20 +10,21 @@ export default function Conversations() {
         if (conversationId) var timeOutFunc = setTimeout(() => setUnreadCountToZero(conversationId), 0)
         return () => clearTimeout(timeOutFunc)
     }, [setUnreadCountToZero])
+    const selectedConversationId = selectedConversationDetails.conversationId
 
     return (
         <ListGroup variant="flush">
             {conversationsDetails.map(conversation => (
                 <ListGroup.Item
-                    ref={selectedConversationDetails.id === conversation.conversationId && conversation.unreadCount > 0 ? lastMessageRef(conversation.conversationId) : null}
+                    ref={selectedConversationId === conversation.conversationId && conversation.unreadCount > 0 ? lastMessageRef(conversation.conversationId) : null}
                     key={conversation.conversationId}
-                    onClick={() => setselectedConversationDetails({ id: conversation.conversationId, name: conversation.conversationName, members: conversation.members, isPersonalChat: conversation.isPersonalChat })}
-                    active={selectedConversationDetails.id === conversation.conversationId}
+                    onClick={() => setselectedConversationDetails({ conversationId: conversation.conversationId, conversationName: conversation.conversationName, members: conversation.members, isPersonalChat: conversation.isPersonalChat })}
+                    active={selectedConversationId === conversation.conversationId}
                     style={{ cursor: 'pointer' }}
                 >
                     {conversation.conversationName}
-                    {selectedConversationDetails.id !== conversation.conversationId && conversation.unreadCount > 0 && <Badge className="float-right" pill variant="warning" style={{ padding: '.4em .65em' }}>{conversation.unreadCount}</Badge>}
-                    <div className={`text-right small ${selectedConversationDetails.id === conversation.conversationId ? 'text-white' : 'text-muted '}`}>{moment(conversation.lastUpdatedTime).format('LT')}</div>
+                    {selectedConversationId !== conversation.conversationId && conversation.unreadCount > 0 && <Badge className="float-right" pill variant="warning" style={{ padding: '.4em .65em' }}>{conversation.unreadCount}</Badge>}
+                    <div className={`text-right small ${selectedConversationId === conversation.conversationId ? 'text-white' : 'text-muted '}`}>{moment(conversation.lastUpdatedTime).format('LT')}</div>
                 </ListGroup.Item>
             ))}
         </ListGroup>

@@ -42,7 +42,7 @@ export default function OpenConversation() {
                         height="30"
                         className="d-inline-block align-top"
                     />{' '} */}
-                    {selectedConversationDetails.name}
+                    {selectedConversationDetails.conversationName}
                     {getMessages && getMessages.isOnline && <span className="small ml-2">online</span>}
                 </Navbar.Brand>
                 {/* <Navbar.Collapse className="justify-content-end">

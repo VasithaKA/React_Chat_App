@@ -8,10 +8,10 @@ import ContactModal from './ContactModal'
 export default function Contacts({ myId }) {
     const { setselectedConversationDetails } = useConversations()
     const { contacts } = useContacts()
-    const [userDetails, setuserDetails] = useState({ openModal: false, id: '', name: '' })
+    const [userDetails, setuserDetails] = useState({ openModal: false, id: '', email: '', name: '' })
 
     function goToPersonalConversation(contactDetails) {
-        setselectedConversationDetails({ id: uuidHashing(myId, contactDetails.id), name: contactDetails.name, isPersonalChat: true, members: [contactDetails.id, myId] })
+        setselectedConversationDetails({ conversationId: uuidHashing(myId, contactDetails.id), conversationName: contactDetails.name, isPersonalChat: true, members: [contactDetails.id, myId] })
     }
 
     function editPersonDetails(contactDetails) {
@@ -29,7 +29,7 @@ export default function Contacts({ myId }) {
                     <ListGroup.Item key={contact.id} className="position-relative" variant="flush">
                         <div style={{ cursor: 'pointer' }} onClick={() => goToPersonalConversation(contact)}>
                             {contact.name}
-                            <i className={`fa fa-circle ml-2 ${contact.isOnline ? 'text-success' : 'text-danger'}`} style={{ fontSize: '.7em' }} aria-hidden="true" />
+                            {contact.isOnline && <i className="fa fa-circle ml-2 text-success" style={{ fontSize: '.7em' }} aria-hidden="true" />}
                         </div>
                         <span className="position-absolute rounded-circle" style={{
                             padding: '.05em .3em', background: 'rgb(220, 220, 220)',

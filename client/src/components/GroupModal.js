@@ -7,7 +7,7 @@ import { v4 as uuidV4 } from 'uuid';
 const moment = window.moment;
 
 export default function GroupModal({ closeModal }) {
-    const [selectedContactIds, setselectedContactIds] = useState([])
+    const [selectedContacts, setselectedContacts] = useState([])
     const groupNameRef = useRef()
     const { contacts } = useContacts()
     const { createGroupConversation } = useConversations()
@@ -15,17 +15,19 @@ export default function GroupModal({ closeModal }) {
     function handleSubmit(e) {
         e.preventDefault()
         const groupName = groupNameRef.current.value ? groupNameRef.current.value : 'New Group'
-        if (selectedContactIds.length > 0) createGroupConversation(uuidV4(), groupName, selectedContactIds, moment().format())
+        if (selectedContacts.length > 0) createGroupConversation(uuidV4(), groupName, selectedContacts, moment().format())
         closeModal()
     }
 
     function handleCheckboxChange(e) {
         const [isChecked, contactId] = [e.target.checked, e.target.value]
-        setselectedContactIds(prevSelectedContactIds => {
-            if (!prevSelectedContactIds.includes(contactId) && isChecked) {
-                return [...prevSelectedContactIds, contactId]
-            } else if (prevSelectedContactIds.includes(contactId) && !isChecked) {
-                return prevSelectedContactIds.filter(fId => fId !== contactId)
+        const { id, email, knownAs } = contacts.find(e => e.id === contactId)
+        setselectedContacts(prevSelectedContacts => {
+            const isNotInPrev = !prevSelectedContacts.find(e => e._id === id)
+            if (isNotInPrev && isChecked) {
+                return [...prevSelectedContacts, { _id: id, email, knownAs }]
+            } else if (!isNotInPrev && !isChecked) {
+                return prevSelectedContacts.filter(e => e._id !== contactId)
             }
         })
     }

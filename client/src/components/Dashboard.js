@@ -8,7 +8,7 @@ export default function Dashboard({ myId }) {
     return (
         <div className="d-flex" style={{ height: '100vh' }}>
             <SideBar myId={myId} />
-            {selectedConversationDetails.id && <OpenConversation />}
+            {selectedConversationDetails.conversationId && <OpenConversation />}
         </div>
     )
 }

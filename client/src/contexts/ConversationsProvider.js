@@ -9,9 +9,9 @@ const API = '/api/conversations'
 
 export const useConversations = () => useContext(ConversationsContext)
 
-export function ConversationsProvider({ myId, children }) {
+export function ConversationsProvider({ myId, token, knownAs, email, children }) {
     const [conversations, setconversations] = useLocalStorage('conversations', [])
-    const [selectedConversationDetails, setselectedConversationDetails] = useState({ id: '', name: 'Group Name', isPersonalChat: false, members: [] })
+    const [selectedConversationDetails, setselectedConversationDetails] = useState({ conversationId: '', conversationName: 'Group Name', isPersonalChat: false, members: [] })
     const { contacts } = useContacts()
     const { socket } = useSocket()
 
@@ -44,34 +44,65 @@ export function ConversationsProvider({ myId, children }) {
         console.log("settozerooo");
         const requestOptions = {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ conversationId, memberId: myId })
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ conversationId })
         };
-        fetch(API, requestOptions)
-            .then(() => {
-                setconversations(prevConversations => {
-                    const newConversations = prevConversations.map(conversation => {
-                        if (conversation.conversationId === conversationId) {
-                            return { ...conversation, unreadCount: 0 }
-                        }
-                        return conversation
-                    })
-                    return newConversations
+        fetch(API, requestOptions).then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                const error = (data && data.message) || response.statusText;
+                return Promise.reject(error);
+            }
+            setconversations(prevConversations => {
+                const newConversations = prevConversations.map(conversation => {
+                    if (conversation.conversationId === conversationId) {
+                        return { ...conversation, unreadCount: 0 }
+                    }
+                    return conversation
                 })
-            }).catch(error => console.log(error))
-    }, [myId, setconversations])
+                return newConversations
+            })
+        }).catch(error => {
+            console.error('There was an error!', error);
+        });
+        // fetch(API, requestOptions)
+        //     .then(() => {
+        //         setconversations(prevConversations => {
+        //             const newConversations = prevConversations.map(conversation => {
+        //                 if (conversation.conversationId === conversationId) {
+        //                     return { ...conversation, unreadCount: 0 }
+        //                 }
+        //                 return conversation
+        //             })
+        //             return newConversations
+        //         })
+        //     }).catch(error => console.log(error))
+    }, [token, setconversations])
 
     useEffect(() => {
         // GET request using fetch inside useEffect React hook
         console.log('Test API...................');
-        fetch(API + '/' + myId)
-            .then(response => response.json())
-            .then(data => {
-                setconversations(data)
-            });
+        const headers = { 'Authorization': 'Bearer ' + token }
+        fetch(API, { headers }).then(async response => {
+            const data = await response.json();
+            // check for error response
+            if (!response.ok) {
+                // get error message from body or default to response statusText
+                const error = (data && data.message) || response.statusText;
+                return Promise.reject(error);
+            }
+            setconversations(data)
+        }).catch(error => {
+            console.error('There was an error!', error);
+        });
+        // fetch(API, { headers })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         setconversations(data)
+        //     }).catch(error => console.log(error))
 
         // empty dependency array means this effect will only run once (like componentDidMount in classes)
-    }, [myId, setconversations]);
+    }, [token, setconversations]);
 
     useEffect(() => {
         console.log("socket")
@@ -87,13 +118,13 @@ export function ConversationsProvider({ myId, children }) {
     }, [socket, addNewGroupConversation])
 
     function sendMessage(content, sentDate) {
-        const [conversationId, conversationName, isPersonalChat, members] = [selectedConversationDetails.id, selectedConversationDetails.name, selectedConversationDetails.isPersonalChat, selectedConversationDetails.members]
+        const { conversationId, conversationName, isPersonalChat, members } = selectedConversationDetails
         socket.emit('send-message', { content, sentDate, conversationId, conversationName, isPersonalChat, members })
-        addMessageToConversation({ senderId: myId, content, sentDate, conversationId, isPersonalChat, members })
+        addMessageToConversation({ senderId: { _id: myId }, content, sentDate, conversationId, isPersonalChat, members })
     }
 
     function createGroupConversation(conversationId, conversationName, members, createdDateTime) {
-        members.push(myId)
+        members.push({ _id: myId, email, knownAs })
         socket.emit('create-conversation', { conversationId, conversationName, members, createdDateTime })
         addNewGroupConversation({ conversationId, conversationName, members, createdDateTime })
     }
@@ -102,20 +133,20 @@ export function ConversationsProvider({ myId, children }) {
     let getUnreadConversationCount = 0
 
     const getConversatonsDetails = conversations.map(conversation => {
-        const isSelectedConversation = conversation.conversationId === selectedConversationDetails.id
+        const isSelectedConversation = conversation.conversationId === selectedConversationDetails.conversationId
         if (isSelectedConversation) {
             const messages = conversation.messages.map(message => {
-                const contact = contacts.find(contact => contact.id === message.senderId)
-                const senderName = (contact && contact.name) || message.senderId
-                const fromMe = myId === message.senderId
+                const contact = contacts.find(contact => contact.id === message.senderId._id)
+                const senderName = (contact && contact.name) || message.senderId.knownAs
+                const fromMe = myId === message.senderId._id
                 return { ...message, senderName, fromMe }
             })
             getSelectedConversationDetails = { ...conversation, messages }
         }
         if (conversation.isPersonalChat) {
-            const memberId = conversation.members.find(id => id !== myId)
-            const contact = contacts.find(contact => contact.id === memberId)
-            var personalChatName = (contact && contact.name) || memberId
+            const memberId = conversation.members.find(member => member._id !== myId)
+            const contact = contacts.find(contact => contact.id === memberId._id)
+            var personalChatName = (contact && contact.name) || memberId.email
             if (isSelectedConversation) {
                 const isOnline = (contact && contact.isOnline) || ''
                 getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline }
