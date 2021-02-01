@@ -34,9 +34,11 @@ app.use((req, res, next) => {
 
 // Routes require
 const conversationRoutes = require("./api/routes/conversations")
+const userRoutes = require("./api/routes/users")
 
 // Routes which should handle requests
 app.use("/api/conversations", conversationRoutes)
+app.use("/api/users", userRoutes)
 
 app.use((req, res, next) => {
     const error = new Error("Not found");
