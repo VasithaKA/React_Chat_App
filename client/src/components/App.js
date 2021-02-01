@@ -7,19 +7,19 @@ import Dashboard from "./Dashboard";
 import Login from "./Login";
 
 function App() {
-  const [myId, setmyId] = useLocalStorage('myId')
+  const [profile, setprofile] = useLocalStorage('profile', '')
   const dashboard = (
-    <SocketProvider clientId={myId}>
-      <ContactsProvider>
-        <ConversationsProvider myId={myId}>
-          <Dashboard myId={myId} />
+    <SocketProvider clientId={profile._id}>
+      <ContactsProvider token={profile.token}>
+        <ConversationsProvider myId={profile._id} token={profile.token} knownAs={profile.knownAs} email={profile.email}>
+          <Dashboard myId={profile._id} />
         </ConversationsProvider>
       </ContactsProvider>
     </SocketProvider>
   )
 
   return (
-    myId ? dashboard : <Login onIdSubmit={setmyId} />
+    profile ? dashboard : <Login onAuthSubmit={setprofile} />
   )
 }
 
