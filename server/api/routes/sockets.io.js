@@ -20,7 +20,7 @@ module.exports = socket => {
 
     socket.on('send-user-online', ({ contactId }) => {
         if (contactId) {
-            socket.broadcast.to(contactId).emit('receive-user-online', { userId: clientId })
+            if (contacts.findIndex(e => e.id === contactId) !== -1) socket.broadcast.to(contactId).emit('receive-user-online', { userId: clientId })
         }
     })
 
