@@ -1,11 +1,12 @@
 const SocketsController = require('../controllers/sockets.io');
 
 module.exports = socket => {
-    const clientId = socket.handshake.query.clientId
+    const clientId = socket.loggedInUserData._id
+    const knownAs = socket.loggedInUserData.knownAs
     let contacts = []
     socket.join(clientId)
 
-    socket.on('send-message', req => SocketsController.sendMessage({ ...req, socket, clientId }))
+    socket.on('send-message', req => SocketsController.sendMessage({ ...req, socket, clientId, knownAs }))
 
     socket.on('create-conversation', req => SocketsController.createNewConversation({ ...req, socket }))
 

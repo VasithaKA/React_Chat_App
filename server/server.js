@@ -13,7 +13,8 @@ const io = require('socket.io')(server, {
 });
 
 const ioFunction = require('./api/routes/sockets.io');
+const checkSocketAuth = require('./api/middleware/socket-auth');
 
-io.on('connection', ioFunction)
+io.use(checkSocketAuth).on('connection', ioFunction)
 
 server.listen(port, () => console.log('Sever listening at ' + port));
