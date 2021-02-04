@@ -65,18 +65,6 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
         }).catch(error => {
             console.error('There was an error!', error);
         });
-        // fetch(API, requestOptions)
-        //     .then(() => {
-        //         setconversations(prevConversations => {
-        //             const newConversations = prevConversations.map(conversation => {
-        //                 if (conversation.conversationId === conversationId) {
-        //                     return { ...conversation, unreadCount: 0 }
-        //                 }
-        //                 return conversation
-        //             })
-        //             return newConversations
-        //         })
-        //     }).catch(error => console.log(error))
     }, [token, setconversations])
 
     useEffect(() => {
@@ -95,13 +83,6 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
         }).catch(error => {
             console.error('There was an error!', error);
         });
-        // fetch(API, { headers })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         setconversations(data)
-        //     }).catch(error => console.log(error))
-
-        // empty dependency array means this effect will only run once (like componentDidMount in classes)
     }, [token, setconversations]);
 
     useEffect(() => {
@@ -137,7 +118,7 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
         if (isSelectedConversation) {
             const messages = conversation.messages.map(message => {
                 const contact = contacts.find(contact => contact.id === message.senderId._id)
-                const senderName = (contact && contact.name) || message.senderId.knownAs
+                const senderName = (contact && contact.name) || '~' + message.senderId.knownAs
                 const fromMe = myId === message.senderId._id
                 return { ...message, senderName, fromMe }
             })
@@ -151,6 +132,10 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
                 const isOnline = (contact && contact.isOnline) || ''
                 getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline }
             }
+        }
+        //if selected conversation, name update
+        if (isSelectedConversation && conversation.isPersonalChat && selectedConversationDetails.conversationName !== personalChatName) {
+            setselectedConversationDetails(prevState => ({ ...prevState, conversationName: personalChatName }))
         }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
         return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdatedTime: conversation.lastUpdatedTime, unreadCount: conversation.unreadCount }
