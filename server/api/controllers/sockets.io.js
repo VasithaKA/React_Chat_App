@@ -2,7 +2,7 @@ const Chat = require('../models/Chat');
 const ChatMember = require('../models/ChatMember');
 const Conversation = require('../models/Conversation');
 
-const sendMessage = async ({ content, sentDate, conversationId, conversationName, isPersonalChat, members, socket, clientId }) => {
+const sendMessage = async ({ content, sentDate, conversationId, conversationName, isPersonalChat, members, socket, clientId, knownAs }) => {
     const memberIds = members.map(item => item._id)
     const chatDetails = await Chat.findOne({ conversationId }).select('_id')
     if (!chatDetails && isPersonalChat) {
@@ -19,7 +19,7 @@ const sendMessage = async ({ content, sentDate, conversationId, conversationName
         ChatMember.find({ chatId: chatDetails && chatDetails._id || newChatDetails._id, memberId: { $ne: clientId } }).updateMany({ $inc: { 'unreadCount': 1 } }).then(() => {
             memberIds.forEach(memberId => {
                 socket.broadcast.to(memberId).emit('receive-message', {
-                    senderId: clientId, content, sentDate, conversationId, conversationName, isPersonalChat, members, isRead: false
+                    senderId: { _id: clientId, knownAs }, content, sentDate, conversationId, conversationName, isPersonalChat, members, isRead: false
                 })
             })
         })

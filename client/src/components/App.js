@@ -9,10 +9,10 @@ import Login from "./Login";
 function App() {
   const [profile, setprofile] = useLocalStorage('profile', '')
   const dashboard = (
-    <SocketProvider clientId={profile._id}>
+    <SocketProvider token={profile.token}>
       <ContactsProvider token={profile.token}>
         <ConversationsProvider myId={profile._id} token={profile.token} knownAs={profile.knownAs} email={profile.email}>
-          <Dashboard myId={profile._id} />
+          <Dashboard myId={profile._id} knownAs={profile.knownAs} email={profile.email} onLogout={setprofile} />
         </ConversationsProvider>
       </ContactsProvider>
     </SocketProvider>

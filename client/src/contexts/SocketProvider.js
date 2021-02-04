@@ -6,17 +6,17 @@ const SERVERSOCKETURL = 'http://localhost:5000'
 
 export const useSocket = () => useContext(SocketContext)
 
-export function SocketProvider({ clientId, children }) {
+export function SocketProvider({ token, children }) {
     const [socket, setsocket] = useState()
 
     useEffect(() => {
         const newSocket = io(
             SERVERSOCKETURL,
-            { query: { clientId } }
+            { query: { token } }
         )
         setsocket(newSocket)
         return () => newSocket.close()
-    }, [clientId])
+    }, [token])
 
     return (
         <SocketContext.Provider value={{ socket }}>
