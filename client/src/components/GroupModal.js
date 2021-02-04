@@ -39,7 +39,7 @@ export default function GroupModal({ closeModal }) {
                 <Form onSubmit={handleSubmit}>
                     <Form.Group>
                         <Form.Label>Group Name</Form.Label>
-                        <Form.Control type="text" ref={groupNameRef} placeholder="Group Name" />
+                        <Form.Control className="loginInput" type="text" ref={groupNameRef} placeholder="Group Name" />
                     </Form.Group>
                     {contacts.map(contact => (
                         <Form.Group controlId={contact.id} key={contact.id}>
