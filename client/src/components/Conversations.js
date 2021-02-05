@@ -8,10 +8,10 @@ export default function Conversations() {
     const { conversationsDetails, selectedConversationDetails, setselectedConversationDetails } = useConversations()
     const selectedConversationId = selectedConversationDetails.conversationId
     const dateFormats = {
-        sameDay: '[Today]',
+        sameDay: 'LT',
         lastDay: '[Yesterday]',
         lastWeek: '[last] dddd',
-        sameElse: 'DD MMMM YYYY'
+        sameElse: 'L'
     }
 
     function onClickHandler({ conversationId, conversationName, members, isPersonalChat }) {
