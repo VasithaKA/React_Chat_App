@@ -130,7 +130,8 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
             var personalChatName = (contact && contact.name) || memberId.email
             if (isSelectedConversation) {
                 const isOnline = (contact && contact.isOnline) || ''
-                getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline }
+                const memberKnownAs = !(contact && contact.name) && ('~' + memberId.knownAs) || ''
+                getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline, memberKnownAs }
             }
         }
         //if selected conversation, name update
