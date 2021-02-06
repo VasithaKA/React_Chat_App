@@ -4,7 +4,7 @@ import { useSocket } from './SocketProvider';
 
 const ContactsContext = React.createContext()
 
-const API = '/api/users'
+const API = '/api/contacts'
 
 export const useContacts = () => useContext(ContactsContext)
 
@@ -13,23 +13,27 @@ export function ContactsProvider({ token, children }) {
     const [onlineContactIds, setonlineContactIds] = useState([])
     const { socket } = useSocket()
 
-    const createContact = useCallback(({ id, email, name, isUpdateContact, shouldDeleteContact }) => {
-        const URL = `${API}/${email}`
-        const headers = { 'Authorization': 'Bearer ' + token }
-        if (!isUpdateContact && !shouldDeleteContact) {
-            fetch(URL, { headers }).then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    const error = (data && data.message) || response.statusText;
-                    return Promise.reject(error);
-                }
-                setcontacts(prevContacts => [...prevContacts, { id: data.id, email, name, knownAs: data.knownAs }])
-            }).catch(error => {
-                console.error('There was an error!', error);
-            })
-        } else {
-            setcontacts(prevContacts => {
-                if (isUpdateContact) {
+    const createContact = useCallback(async ({ id, email, name, isUpdateContact, shouldDeleteContact }) => {
+        const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+
+        try {
+            if (!isUpdateContact && !shouldDeleteContact) {
+                const requestOptions = {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ email, name })
+                };
+                const data = await apiCaller({ requestOptions })
+                setcontacts(prevContacts => [...prevContacts, { ...data, email, name }])
+
+            } else if (isUpdateContact && !shouldDeleteContact) {
+                const requestOptions = {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify({ id, name })
+                };
+                await apiCaller({ requestOptions })
+                setcontacts(prevContacts => {
                     const updatedContacts = prevContacts.map(contact => {
                         if (contact.id === id) {
                             return { ...contact, name }
@@ -38,13 +42,48 @@ export function ContactsProvider({ token, children }) {
                         }
                     })
                     return updatedContacts
-                } else if (shouldDeleteContact) {
+                })
+            } else if (!isUpdateContact && shouldDeleteContact) {
+                const requestOptions = {
+                    method: 'DELETE',
+                    headers,
+                    body: JSON.stringify({ id })
+                };
+                await apiCaller({ requestOptions })
+                setcontacts(prevContacts => {
                     const updatedContacts = prevContacts.filter(contact => contact.id !== id)
                     return updatedContacts
-                }
-            })
+                })
+            }
+        } catch (error) {
+            console.log("There was an error:", error);
         }
     }, [token, setcontacts])
+
+    useEffect(() => {
+        async function fetchData() {
+            console.log('Contact API...................');
+            const requestOptions = { headers: { 'Authorization': 'Bearer ' + token } }
+            try {
+                const data = await apiCaller({ requestOptions })
+                setcontacts(data)
+            } catch (error) {
+                console.log("There was an error:", error);
+            }
+        }
+        fetchData()
+    }, [token, setcontacts]);
+
+    async function apiCaller({ requestOptions }) {
+        return fetch(API, requestOptions).then(async response => {
+            const data = await response.json();
+            if (!response.ok) {
+                const error = (data && data.message) || response.statusText;
+                return Promise.reject(error);
+            }
+            return data
+        })
+    }
 
     const setOnlineContacts = useCallback(({ userId, isGoToOffline = false }) => {
         console.log(userId)
