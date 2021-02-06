@@ -32,6 +32,7 @@ export default function SideBar({ myId, knownAs, email, selectedConv, isSmallScr
     function logout() {
         console.log("logout");
         onLogout("")
+        localStorage.clear()
     }
 
     return (
@@ -41,7 +42,7 @@ export default function SideBar({ myId, knownAs, email, selectedConv, isSmallScr
                     Hi... <span style={{ fontWeight: "600" }}>{knownAs}</span>
                 </Navbar.Brand>
                 <Navbar.Collapse className="justify-content-end">
-                    <Navbar.Text><span className="loginToggle logOut" onClick={logout}>Log Out</span></Navbar.Text>
+                    <Navbar.Text><span className="loginToggle logOut" onClick={() => logout()}>Log Out</span></Navbar.Text>
                     {/* <Navbar.Text>
                         <i className="fa fa-ellipsis-v" aria-hidden="true"></i>
                     </Navbar.Text> */}
