@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Contact = require('../models/Contact');
 
 exports.signup_user = async (req, res) => {
     const { email, password, knownAs } = req.body
@@ -22,7 +23,8 @@ exports.signup_user = async (req, res) => {
                     password: hash,
                     knownAs
                 })
-                user.save().then(createdUser => {
+                user.save().then(async createdUser => {
+                    await Contact.create({ memberId: createdUser._id, contacts: [] })
                     const token = jwt.sign({ _id: createdUser._id, knownAs: createdUser.knownAs }, process.env.JWT_KEY)
                     res.status(201).json({
                         message: "Your account is created",
