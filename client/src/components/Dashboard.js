@@ -19,7 +19,7 @@ export default function Dashboard({ myId, knownAs, email, onLogout }) {
 
     return (
         <div className="d-flex" style={{ height: '100vh' }}>
-            <SideBar myId={myId} knownAs={knownAs} email={email} selectedConv={selectedConversationDetails.conversationId} isSmallScreen={isSmallScreen} onLogout={onLogout} />
+            <SideBar myId={myId} knownAs={knownAs} email={email} selectedConv={selectedConversationDetails} isSmallScreen={isSmallScreen} onLogout={onLogout} />
             {selectedConversationDetails.conversationId && <OpenConversation isSmallScreen={isSmallScreen} />}
         </div>
     )

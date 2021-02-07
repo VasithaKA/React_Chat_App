@@ -29,9 +29,7 @@ export default function OpenConversation({ isSmallScreen }) {
 
     useEffect(() => {
         settext('')
-        setopenSidebar(false)
-        formInputRef.current.focus()
-    }, [selectedConversationDetails, getMessages])
+    }, [selectedConversationDetails.conversationId])
 
     useEffect(() => {
         if (getMessages.unreadCount > 0) {
@@ -41,18 +39,20 @@ export default function OpenConversation({ isSmallScreen }) {
 
     useEffect(() => {
         setopenSidebar(false)
+        formInputRef.current.focus()
         if (!isSmallScreen) {
-            document.getElementById("sidebar").style.width = "264px";
+            document.getElementById("sidebar").style.width = "270px";
             document.getElementById("conversationLayer").style.marginLeft = "0";
         }
-    }, [isSmallScreen])
+    }, [isSmallScreen, selectedConversationDetails])
 
     function sidebarToggler(toggle) {
         setopenSidebar(prev => !prev)
         if (toggle) {
-            document.getElementById("sidebar").style.width = "264px";
-            document.getElementById("conversationLayer").style.marginLeft = "264px";
+            document.getElementById("sidebar").style.width = "270px";
+            document.getElementById("conversationLayer").style.marginLeft = "270px";
         } else {
+            formInputRef.current.focus()
             document.getElementById("sidebar").style.width = "0";
             document.getElementById("conversationLayer").style.marginLeft = "0";
         }

@@ -47,7 +47,7 @@ export default function GroupModal({ closeModal }) {
                                 type="checkbox"
                                 value={contact.id}
                                 label={contact.name}
-                                onChange={handleCheckboxChange}
+                                onChange={e => handleCheckboxChange(e)}
                             />
                         </Form.Group>
                     ))}
