@@ -9,11 +9,11 @@ exports.get_user_conversations = async (req, res) => {
         let output_collections = []
         for (let i = 0; i < conversationIds.length; i++) {
             const { chatId, unreadCount } = conversationIds[i]
-            const getchatDetails = Chat.findById(chatId).select('conversationId conversationName isPersonalChat lastUpdatedTime members').populate({ path: 'members', select: 'knownAs email' })
+            const getchatDetails = Chat.findById(chatId).select('conversationId conversationName isPersonalChat createdAt members').populate({ path: 'members', select: 'knownAs email' })
             const getmessages = Conversation.find({ chatId }).select('content senderId sentDate -_id').sort('sentDate').populate({ path: 'senderId', select: 'knownAs' })
             const response = await Promise.all([getchatDetails, getmessages])
             const messages = response[1]
-            const lastUpdatedTime = messages[messages.length - 1].sentDate
+            const lastUpdatedTime = messages.length > 0 ? messages[messages.length - 1].sentDate : response[0].createdAt
             output_collections.push({ ...response[0].toJSON(), lastUpdatedTime, messages, unreadCount })
         }
         res.status(200).json(output_collections)
