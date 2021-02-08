@@ -9,7 +9,7 @@ const sendMessage = async ({ content, sentDate, conversationId, conversationName
         var newChatDetails = await Chat.create({ conversationId, isPersonalChat, members: memberIds })
         const chatMembers = members.map(member => ({ chatId: newChatDetails._id, memberId: member._id }))
         await ChatMember.insertMany(chatMembers)
-    } else if (!chatDetails && !isPersonalChat) return console.log('error in send message')
+    } else if (!chatDetails && !isPersonalChat) return console.error('error in send message')
     Conversation.create({
         senderId: clientId,
         chatId: chatDetails && chatDetails._id || newChatDetails._id,
@@ -24,7 +24,7 @@ const sendMessage = async ({ content, sentDate, conversationId, conversationName
             })
         })
     }).catch(error => {
-        console.log(error)
+        console.error(error)
     })
 }
 
@@ -46,7 +46,7 @@ const createNewConversation = ({ conversationId, conversationName, members, crea
             })
         })
     }).catch(error => {
-        console.log(error)
+        console.error(error)
     })
 }
 

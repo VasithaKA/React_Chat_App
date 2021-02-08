@@ -55,7 +55,7 @@ export function ContactsProvider({ token, children }) {
                 })
             }
         } catch (error) {
-            console.log("There was an error:", error);
+            console.error("There was an error:", error);
         }
     }, [token, setcontacts])
 
@@ -67,7 +67,7 @@ export function ContactsProvider({ token, children }) {
                 const data = await apiCaller({ requestOptions })
                 setcontacts(data)
             } catch (error) {
-                console.log("There was an error:", error);
+                console.error("There was an error:", error);
             }
         }
         fetchData()

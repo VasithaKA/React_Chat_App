@@ -13,7 +13,7 @@ export default function Dashboard({ myId, knownAs, email, onLogout }) {
                 setisSmallScreen(window.innerWidth <= 768)
             }, false)
         } catch (error) {
-            console.log("Not support 'error': ", error);
+            console.error("Not support 'error': ", error);
         }
     }, [])
 
