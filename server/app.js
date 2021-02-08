@@ -17,7 +17,7 @@ mongoose.set('useCreateIndex', true);
 mongoose.Promise = global.Promise;
 mongoose.connect(mongoURI, { useNewUrlParser: true })
     .then(() => console.log('MogoDB Connected...'))
-    .catch(err => console.log(err))
+    .catch(err => console.error(err))
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
