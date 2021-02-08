@@ -51,7 +51,7 @@ export default function GroupModal({ closeModal }) {
                             />
                         </Form.Group>
                     ))}
-                    <Button type="submit">Add Contact</Button>
+                    <Button type="submit">Create Group</Button>
                 </Form>
             </Modal.Body>
         </>

@@ -26,12 +26,14 @@ export default function Conversations() {
                     onClick={() => onClickHandler(conversation)}
                     active={selectedConversationId === conversation.conversationId}
                     style={{ cursor: 'pointer' }}
+                    title={conversation.conversationName}
                 >
-                    {conversation.conversationName}
-                    {selectedConversationId !== conversation.conversationId && conversation.unreadCount > 0 && <Badge className="float-right" pill variant="warning" style={{ padding: '.4em .65em' }}>{conversation.unreadCount}</Badge>}
+                    <div style={{ width: '190px', textOverflow: 'ellipsis', overflow: 'hidden' }}>{conversation.conversationName}</div>
+                    { selectedConversationId !== conversation.conversationId && conversation.unreadCount > 0 && <Badge className="float-right" pill variant="warning" style={{ padding: '.4em .65em', position: 'absolute', top: '13px', right: '20px' }}>{conversation.unreadCount}</Badge>}
                     <div className={`text-right small ${selectedConversationId === conversation.conversationId ? 'text-white' : 'text-body'}`}>{moment(conversation.lastUpdatedTime).calendar(dateFormats)}</div>
                 </ListGroup.Item>
-            ))}
-        </ListGroup>
+            ))
+            }
+        </ListGroup >
     )
 }

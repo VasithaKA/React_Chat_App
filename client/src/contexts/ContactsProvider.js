@@ -25,7 +25,6 @@ export function ContactsProvider({ token, children }) {
                 };
                 const data = await apiCaller({ requestOptions })
                 setcontacts(prevContacts => [...prevContacts, { ...data, email, name }])
-
             } else if (isUpdateContact && !shouldDeleteContact) {
                 const requestOptions = {
                     method: 'PATCH',
