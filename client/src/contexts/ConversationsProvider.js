@@ -11,7 +11,7 @@ export const useConversations = () => useContext(ConversationsContext)
 
 export function ConversationsProvider({ myId, token, knownAs, email, children }) {
     const [conversations, setconversations] = useLocalStorage('conversations', [])
-    const [selectedConversationDetails, setselectedConversationDetails] = useState({ conversationId: '', conversationName: 'Group Name', isPersonalChat: false, members: [] })
+    const [selectedConversationDetails, setselectedConversationDetails] = useState({ conversationId: '', conversationName: 'Group Name', isPersonalChat: false, isOnline: false, memberKnownAs: '', members: [] })
     const { contacts } = useContacts()
     const { socket } = useSocket()
 
@@ -98,6 +98,21 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
         return () => socket.off('receive-conversation-details')
     }, [socket, addNewGroupConversation])
 
+    useEffect(() => {
+        //if selected conversation, name update
+        setselectedConversationDetails(prevState => {
+            if (prevState.conversationId && prevState.isPersonalChat) {
+                const memberId = prevState.members.find(member => member._id !== myId)
+                const contact = contacts.find(contact => contact.id === memberId._id)
+                const conversationName = (contact && contact.name) || memberId.email
+                const isOnline = (contact && contact.isOnline) || false
+                const memberKnownAs = !(contact && contact.name) ? ('~' + memberId.knownAs) : ''
+                return { ...prevState, conversationName, isOnline, memberKnownAs }
+            }
+            return prevState
+        })
+    }, [contacts, myId])
+
     function sendMessage(content, sentDate) {
         const { conversationId, conversationName, isPersonalChat, members } = selectedConversationDetails
         socket.emit('send-message', { content, sentDate, conversationId, conversationName, isPersonalChat, members })
@@ -120,26 +135,22 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
                 const contact = contacts.find(contact => contact.id === message.senderId._id)
                 const senderName = (contact && contact.name) || '~' + message.senderId.knownAs
                 const fromMe = myId === message.senderId._id
+                if (!conversation.isPersonalChat && !fromMe && !contact) {
+                    const member = conversation.members.find(m => m._id === message.senderId._id)
+                    return { ...message, senderName, fromMe, email: member.email }
+                }
                 return { ...message, senderName, fromMe }
             })
             getSelectedConversationDetails = { ...conversation, messages }
         }
         if (conversation.isPersonalChat) {
-            const memberId = conversation.members.find(member => member._id !== myId)
-            const contact = contacts.find(contact => contact.id === memberId._id)
-            var personalChatName = (contact && contact.name) || memberId.email
-            if (isSelectedConversation) {
-                const isOnline = (contact && contact.isOnline) || ''
-                const memberKnownAs = !(contact && contact.name) && ('~' + memberId.knownAs) || ''
-                getSelectedConversationDetails = { ...getSelectedConversationDetails, isOnline, memberKnownAs }
-            }
-        }
-        //if selected conversation, name update
-        if (isSelectedConversation && conversation.isPersonalChat && selectedConversationDetails.conversationName !== personalChatName) {
-            setselectedConversationDetails(prevState => ({ ...prevState, conversationName: personalChatName }))
+            const member = conversation.members.find(member => member._id !== myId)
+            const contact = contacts.find(contact => contact.id === member._id)
+            var personalChatName = (contact && contact.name) || member.email
         }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
-        return { conversationId: conversation.conversationId, conversationName: conversation.conversationName || personalChatName, isPersonalChat: conversation.isPersonalChat, members: conversation.members, lastUpdatedTime: conversation.lastUpdatedTime, unreadCount: conversation.unreadCount }
+        const { conversationId, conversationName, isPersonalChat, members, lastUpdatedTime, unreadCount } = conversation
+        return { conversationId, conversationName: conversationName || personalChatName, isPersonalChat, members, lastUpdatedTime, unreadCount }
     }).sort((a, b) => new Date(b.lastUpdatedTime) - new Date(a.lastUpdatedTime))
 
     const value = {

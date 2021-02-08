@@ -32,7 +32,7 @@ export default function OpenConversation({ isSmallScreen }) {
     }, [selectedConversationDetails.conversationId])
 
     useEffect(() => {
-        if (getMessages.unreadCount > 0) {
+        if (getMessages && getMessages.unreadCount > 0) {
             setUnreadCountToZero(getMessages.conversationId)
         }
     }, [getMessages, setUnreadCountToZero])
@@ -74,8 +74,8 @@ export default function OpenConversation({ isSmallScreen }) {
                         <i className="fa fa-bars mr-2" aria-hidden="true" onClick={() => sidebarToggler(true)} >{getUnreadConversationCount > 0 && <i className="fa fa-circle text-warning" aria-hidden="true" />}</i>
                     )}
                     <span style={{ fontWeight: "600" }}>{selectedConversationDetails.conversationName}</span>
-                    {getMessages && getMessages.memberKnownAs && <span className="small ml-2">{getMessages.memberKnownAs}</span>}
-                    {getMessages && getMessages.isOnline && <span className="small ml-2">online</span>}
+                    {selectedConversationDetails.memberKnownAs && <span className="small ml-2">{selectedConversationDetails.memberKnownAs}</span>}
+                    {selectedConversationDetails.isOnline && <span className="small ml-2">online</span>}
                 </Navbar.Brand>
                 {/* <Navbar.Collapse className="justify-content-end">
                     <Navbar.Text>
@@ -99,7 +99,8 @@ export default function OpenConversation({ isSmallScreen }) {
                                     className={`d-flex flex-column ${message.fromMe ? 'align-self-end align-items-end' : 'align-items-start'}`}
                                 >
                                     <div className={`rounded px-2 py-1 ${message.fromMe ? 'fromMeChat' : 'fromOtherChat'}`}>
-                                        {!message.fromMe && !getMessages.isPersonalChat && <div className="text-body small">{message.senderName}</div>}
+                                        {!message.fromMe && !getMessages.isPersonalChat && message.email && <div className="text-body small"><span className="mr-2">{message.email}</span><span className="float-right">{message.senderName}</span></div>}
+                                        {!message.fromMe && !getMessages.isPersonalChat && !message.email && <div className="text-body small">{message.senderName}</div>}
                                         <div>{message.content}</div>
                                     </div>
                                     <div className={`text-white-50 small ${message.fromMe ? 'text-right' : ''}`}>{moment(message.sentDate).format('LT')}</div>

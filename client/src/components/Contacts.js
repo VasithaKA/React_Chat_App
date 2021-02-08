@@ -10,8 +10,8 @@ export default function Contacts({ myId, meKnownAs, myEmail }) {
     const { contacts } = useContacts()
     const [userDetails, setuserDetails] = useState({ openModal: false, id: '', email: '', name: '' })
 
-    function goToPersonalConversation({ id, email, name, knownAs }) {
-        setselectedConversationDetails({ conversationId: uuidHashing(myId, id), conversationName: name, isPersonalChat: true, members: [{ _id: id, email, knownAs }, { _id: myId, knownAs: meKnownAs, email: myEmail }] })
+    function goToPersonalConversation({ id, email, name, knownAs, isOnline }) {
+        setselectedConversationDetails({ conversationId: uuidHashing(myId, id), conversationName: name, isPersonalChat: true, isOnline, members: [{ _id: id, email, knownAs }, { _id: myId, knownAs: meKnownAs, email: myEmail }] })
     }
 
     function editPersonDetails(contactDetails) {
