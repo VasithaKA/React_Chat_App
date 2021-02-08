@@ -24,7 +24,7 @@ export default function ContactModal({ closeModal, editContact }) {
                 <Form onSubmit={handleSubmit}>
                     <Form.Group>
                         <Form.Label>Email</Form.Label>
-                        <Form.Control className="loginInput" type="text" ref={emailRef} required disabled={editContact} defaultValue={editContact?.email} placeholder="Enter your friend's email" />
+                        <Form.Control className="loginInput" type="email" ref={emailRef} required disabled={editContact} defaultValue={editContact?.email} placeholder="Enter your friend's email" />
                     </Form.Group>
                     <Form.Group>
                         <Form.Label>Name</Form.Label>
