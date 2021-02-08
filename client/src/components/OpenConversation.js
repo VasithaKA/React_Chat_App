@@ -21,10 +21,17 @@ export default function OpenConversation({ isSmallScreen }) {
 
     function handleSubmit(e) {
         e.preventDefault()
-        if (text) {
-            sendMessage(text, moment().format())
+        if (text.trim().length) {
+            sendMessage(text.trim(), moment().format())
         }
         settext('')
+    }
+
+    function onKeyPressHandler(e) {
+        const keyCode = e.which || e.keyCode;
+        if (keyCode === 13 && e.shiftKey) {
+            handleSubmit(e)
+        }
     }
 
     useEffect(() => {
@@ -101,7 +108,7 @@ export default function OpenConversation({ isSmallScreen }) {
                                     <div className={`rounded px-2 py-1 ${message.fromMe ? 'fromMeChat' : 'fromOtherChat'}`}>
                                         {!message.fromMe && !getMessages.isPersonalChat && message.email && <div className="text-body small"><span className="mr-2">{message.email}</span><span className="float-right">{message.senderName}</span></div>}
                                         {!message.fromMe && !getMessages.isPersonalChat && !message.email && <div className="text-body small">{message.senderName}</div>}
-                                        <div>{message.content}</div>
+                                        <div style={{ whiteSpace: 'pre-line' }}>{message.content}</div>
                                     </div>
                                     <div className={`text-white-50 small ${message.fromMe ? 'text-right' : ''}`}>{moment(message.sentDate).format('LT')}</div>
                                 </div>
@@ -121,6 +128,7 @@ export default function OpenConversation({ isSmallScreen }) {
                             placeholder="Type a message"
                             className="chatInput"
                             onChange={e => settext(e.target.value)}
+                            onKeyPress={e => onKeyPressHandler(e)}
                             style={{ height: '75px', resize: 'none' }}
                         />
                         <InputGroup.Append>
