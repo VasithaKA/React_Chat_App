@@ -14,8 +14,8 @@ export default function Conversations() {
         sameElse: 'L'
     }
 
-    function onClickHandler({ conversationId, conversationName, members, isPersonalChat }) {
-        setselectedConversationDetails({ conversationId, conversationName, members, isPersonalChat })
+    function onClickHandler({ conversationId, conversationName, members, isPersonalChat, memberKnownAs }) {
+        setselectedConversationDetails({ conversationId, conversationName, members, isPersonalChat, memberKnownAs })
     }
 
     return (

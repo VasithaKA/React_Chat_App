@@ -102,11 +102,11 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
         //if selected conversation, name update
         setselectedConversationDetails(prevState => {
             if (prevState.conversationId && prevState.isPersonalChat) {
-                const memberId = prevState.members.find(member => member._id !== myId)
-                const contact = contacts.find(contact => contact.id === memberId._id)
-                const conversationName = (contact && contact.name) || memberId.email
+                const member = prevState.members.find(member => member._id !== myId)
+                const contact = contacts.find(contact => contact.id === member._id)
+                const conversationName = (contact && contact.name) || member.email
                 const isOnline = (contact && contact.isOnline) || false
-                const memberKnownAs = !(contact && contact.name) ? ('~' + memberId.knownAs) : ''
+                const memberKnownAs = !(contact && contact.name) ? ('~' + member.knownAs) : ''
                 return { ...prevState, conversationName, isOnline, memberKnownAs }
             }
             return prevState
@@ -147,10 +147,11 @@ export function ConversationsProvider({ myId, token, knownAs, email, children })
             const member = conversation.members.find(member => member._id !== myId)
             const contact = contacts.find(contact => contact.id === member._id)
             var personalChatName = (contact && contact.name) || member.email
+            var memberKnownAs = !(contact && contact.name) ? ('~' + member.knownAs) : ''
         }
         if (conversation.unreadCount > 0 && !isSelectedConversation) getUnreadConversationCount++
         const { conversationId, conversationName, isPersonalChat, members, lastUpdatedTime, unreadCount } = conversation
-        return { conversationId, conversationName: conversationName || personalChatName, isPersonalChat, members, lastUpdatedTime, unreadCount }
+        return { conversationId, conversationName: conversationName || personalChatName, memberKnownAs, isPersonalChat, members, lastUpdatedTime, unreadCount }
     }).sort((a, b) => new Date(b.lastUpdatedTime) - new Date(a.lastUpdatedTime))
 
     const value = {
